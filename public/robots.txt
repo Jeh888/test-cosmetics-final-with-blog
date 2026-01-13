@@ -1,0 +1,10 @@
+# robots.txt for www.cosmetictreatment.co.uk
+
+User-agent: *
+Allow: /
+
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+Sitemap: https://www.cosmetictreatment.co.uk/sitemap.xml
