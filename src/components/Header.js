@@ -115,6 +115,9 @@ export default function Header() {
             <Link href="/faq" className="text-gray-700 hover:text-primary-600 transition">
               FAQ
             </Link>
+            <Link href="/blog" className="text-gray-700 hover:text-primary-600 transition">
+              Blog
+            </Link>
             <Link href="/contact" className="text-gray-700 hover:text-primary-600 transition">
               Contact
             </Link>
@@ -185,6 +188,7 @@ export default function Header() {
             <Link href="/about" className="block py-2 text-gray-700">About</Link>
             <Link href="/reviews" className="block py-2 text-gray-700">Reviews</Link>
             <Link href="/faq" className="block py-2 text-gray-700">FAQ</Link>
+            <Link href="/blog" className="block py-2 text-gray-700">Blog</Link>
             <Link href="/contact" className="block py-2 text-gray-700">Contact</Link>
             
             <Link
