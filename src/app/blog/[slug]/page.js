@@ -26,51 +26,104 @@ export default function BlogPostPage({ params }) {
 
   const recentBlogs = getRecentBlogs(3).filter(b => b.slug !== blog.slug).slice(0, 2);
 
-  // Simple markdown-like rendering for content
+  // Render markdown content to JSX
   const renderContent = (content) => {
-    return content.split('\n').map((line, index) => {
+    const lines = content.split('\n');
+    const elements = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // Skip empty lines
+      if (line.trim() === '') {
+        i++;
+        continue;
+      }
+
+      // Horizontal rule
+      if (line.trim() === '---') {
+        elements.push(<hr key={i} className="my-8 border-gray-200" />);
+        i++;
+        continue;
+      }
+
       // H2 headers
       if (line.startsWith('## ')) {
-        return <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4">{line.replace('## ', '')}</h2>;
+        elements.push(
+          <h2 key={i} className="text-2xl font-bold text-gray-900 mt-10 mb-4">
+            {line.replace('## ', '')}
+          </h2>
+        );
+        i++;
+        continue;
       }
+
       // H3 headers
       if (line.startsWith('### ')) {
-        return <h3 key={index} className="text-xl font-semibold text-gray-900 mt-6 mb-3">{line.replace('### ', '')}</h3>;
+        elements.push(
+          <h3 key={i} className="text-xl font-semibold text-gray-900 mt-8 mb-3">
+            {line.replace('### ', '')}
+          </h3>
+        );
+        i++;
+        continue;
       }
-      // Bold text (simple)
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return <p key={index} className="font-semibold text-gray-900 mt-4 mb-2">{line.replace(/\*\*/g, '')}</p>;
-      }
-      // List items
-      if (line.startsWith('- ')) {
-        // Check if it's a link
-        const linkMatch = line.match(/\[([^\]]+)\]\(([^)]+)\)/);
-        if (linkMatch) {
-          return (
-            <li key={index} className="ml-6 mb-2 text-gray-600 list-disc">
-              <Link href={linkMatch[2]} className="text-primary-600 hover:text-primary-700 underline">
+
+      // Regular paragraph - process inline markdown
+      const processInlineMarkdown = (text) => {
+        const parts = [];
+        let remaining = text;
+        let keyIndex = 0;
+
+        while (remaining.length > 0) {
+          // Check for links [text](url)
+          const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
+          // Check for bold **text**
+          const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+
+          if (linkMatch && (!boldMatch || remaining.indexOf(linkMatch[0]) < remaining.indexOf(boldMatch[0]))) {
+            // Add text before link
+            const beforeLink = remaining.substring(0, remaining.indexOf(linkMatch[0]));
+            if (beforeLink) {
+              parts.push(<span key={keyIndex++}>{beforeLink}</span>);
+            }
+            // Add link
+            parts.push(
+              <Link key={keyIndex++} href={linkMatch[2]} className="text-primary-600 hover:text-primary-700 underline">
                 {linkMatch[1]}
               </Link>
-            </li>
-          );
+            );
+            remaining = remaining.substring(remaining.indexOf(linkMatch[0]) + linkMatch[0].length);
+          } else if (boldMatch) {
+            // Add text before bold
+            const beforeBold = remaining.substring(0, remaining.indexOf(boldMatch[0]));
+            if (beforeBold) {
+              parts.push(<span key={keyIndex++}>{beforeBold}</span>);
+            }
+            // Add bold text
+            parts.push(<strong key={keyIndex++} className="font-semibold text-gray-900">{boldMatch[1]}</strong>);
+            remaining = remaining.substring(remaining.indexOf(boldMatch[0]) + boldMatch[0].length);
+          } else {
+            // No more markdown, add remaining text
+            parts.push(<span key={keyIndex++}>{remaining}</span>);
+            break;
+          }
         }
-        return <li key={index} className="ml-6 mb-2 text-gray-600 list-disc">{line.replace('- ', '')}</li>;
-      }
-      // Numbered lists
-      if (/^\d+\.\s/.test(line)) {
-        return <li key={index} className="ml-6 mb-2 text-gray-600 list-decimal">{line.replace(/^\d+\.\s/, '')}</li>;
-      }
-      // Horizontal rule
-      if (line === '---') {
-        return <hr key={index} className="my-8 border-gray-200" />;
-      }
-      // Empty lines
-      if (line.trim() === '') {
-        return null;
-      }
-      // Regular paragraphs
-      return <p key={index} className="text-gray-600 mb-4 leading-relaxed">{line}</p>;
-    });
+
+        return parts;
+      };
+
+      // Regular paragraph
+      elements.push(
+        <p key={i} className="text-gray-600 mb-4 leading-relaxed">
+          {processInlineMarkdown(line)}
+        </p>
+      );
+      i++;
+    }
+
+    return elements;
   };
 
   return (
